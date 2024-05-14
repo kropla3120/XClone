@@ -9,7 +9,7 @@ import session from "express-session";
 import { LoginRequestDTO } from "./types";
 import { and, eq } from "drizzle-orm";
 import cors from "cors";
-import { posts, users } from "./db/schema";
+import { comments, posts, users } from "./db/schema";
 
 // const SESSION_TIMEOUT = 60000;
 
@@ -58,7 +58,7 @@ app.post("/api/login", async (req, res) => {
   res.status(200).json({ message: "Logged in" });
 });
 
-app.post("/api/logout", (req, res) => {
+app.get("/api/logout", (req, res) => {
   req.session.destroy(() => {
     res.status(200).json({ message: "Logged out" });
   });
@@ -103,6 +103,48 @@ app.get("/api/posts/:id", async (req, res) => {
     },
   });
   res.json(data);
+});
+
+app.put("/api/posts/:id", async (req, res) => {
+  if (!req.session.user) {
+    res.status(401).json({ error: "Not logged in" });
+    return;
+  }
+  const { id } = req.params;
+  const { title, content } = req.body;
+  db.update(posts)
+    .set({ title, content })
+    .where(eq(posts.id, parseInt(id)))
+    .execute();
+  res.json({ message: "Post updated" });
+});
+
+app.get("/api/posts/:id/comments", async (req, res) => {
+  if (!req.session.user) {
+    res.status(401).json({ error: "Not logged in" });
+    return;
+  }
+  const { id } = req.params;
+  const data = await db.query.comments.findMany({
+    where: eq(comments.postId, parseInt(id)),
+    with: {
+      user: true,
+    },
+  });
+  res.json(data);
+});
+
+app.post("/api/posts/:id/comments", async (req, res) => {
+  if (!req.session.user) {
+    res.status(401).json({ error: "Not logged in" });
+    return;
+  }
+  const { id } = req.params;
+  const { content } = req.body;
+  db.insert(comments)
+    .values({ content, userId: req.session.user.id, postId: parseInt(id), created: new Date().toISOString() })
+    .execute();
+  res.status(201).json({ message: "Comment created" });
 });
 
 app.post("/api/posts", (req, res) => {

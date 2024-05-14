@@ -1,6 +1,5 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { AppContext } from "@/context";
 import { createFileRoute, createLazyFileRoute, redirect, useRouter } from "@tanstack/react-router";
 import { useContext } from "react";
 
@@ -30,19 +29,19 @@ const Login = () => {
     }
   };
   return (
-    <div className="w-full h-screen bg-zinc-950 flex justify-center items-center">
+    <div className="w-full h-screen  flex justify-center items-center">
       <form onSubmit={handleSubmit}>
         <div className="w-96 flex flex-col gap-4 text-center">
-          <h1 className="text-5xl text-white font-bold mb-4">Zaloguj się</h1>
+          <h1 className="text-5xl  font-bold mb-4">Zaloguj się</h1>
 
           <Input type="text" placeholder="Login" name="username" />
           <Input type="password" placeholder="Hasło" name="password" />
           <Button variant="default" size="default" className="w-full" type="submit">
             Login
           </Button>
-          <p className="text-gray-200">
+          <p className="dark:text-gray-200 text-gray-700">
             Nie masz konta ?{" "}
-            <a className="text-white" href="/register">
+            <a className="dark:text-white text-gray-950" href="/register">
               Zarejestruj się
             </a>
           </p>
