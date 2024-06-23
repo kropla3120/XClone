@@ -1,15 +1,87 @@
 import { generateAvatar } from "@/lib/utils";
 import { PostDTO } from "@/types";
 import { useRouter } from "@tanstack/react-router";
-import React from "react";
+import React, { useContext } from "react";
 import EditPost from "./EditPost";
+import { UserContext } from "@/context";
+import DeletePost from "./DeletePost";
+import { Button } from "./ui/button";
+import { toast } from "sonner";
+import { useQueryClient } from "@tanstack/react-query";
 
 const Post = ({ post, short }: { post: PostDTO; short: boolean }) => {
+  const { user } = useContext(UserContext);
+  const queryClient = useQueryClient();
   const router = useRouter();
+
+  const handleFollow = async () => {
+    const res = await fetch(`/api/followers/follow/${post.user.id}`, {
+      method: "PUT",
+    });
+
+    const data = await res.json();
+
+    if (data.error) {
+      toast.error(data.error);
+    }
+    if (data.message) {
+      toast.success(data.message);
+    }
+    queryClient.invalidateQueries({ queryKey: ["posts"] });
+  };
+
+  const handleUnfollow = async () => {
+    const res = await fetch(`/api/followers/unfollow/${post.user.id}`, {
+      method: "DELETE",
+    });
+
+    const data = await res.json();
+
+    if (data.error) {
+      toast.error(data.error);
+    }
+    if (data.message) {
+      toast.success(data.message);
+    }
+
+    queryClient.invalidateQueries({ queryKey: ["posts"] });
+  };
+
+  const toggleLike = async () => {
+    const res = await fetch(`/api/posts/${post.id}/like`, {
+      method: post.likedByMe ? "DELETE" : "PUT",
+    });
+
+    const data = await res.json();
+
+    if (data.error) {
+      toast.error(data.error);
+    }
+
+    queryClient.invalidateQueries({ queryKey: ["posts", "post", post.id] });
+  };
+
   return (
     <div className="relative">
-      <div className="absolute right-0">
-        <EditPost post={post} />
+      <div className="absolute right-0 flex">
+        {post.myPost ? (
+          <>
+            <DeletePost post={post} isInPostDetails={!short} />
+            <EditPost post={post} />
+          </>
+        ) : (
+          <div className="p-2">
+            {post.creatorFollowed ? (
+              <Button size={"sm"} variant={"outline"} onClick={handleUnfollow}>
+                Obserwujesz
+              </Button>
+            ) : (
+              <Button size={"sm"} onClick={handleFollow}>
+                Obserwuj
+              </Button>
+            )}
+          </div>
+        )}
       </div>
       <div
         className="w-full flex gap-3 border border-grey-500 p-4 dark:hover:bg-zinc-900 hover:bg-zinc-50 cursor-pointer"
@@ -33,8 +105,8 @@ const Post = ({ post, short }: { post: PostDTO; short: boolean }) => {
             </div>
           </div>
           <div className="w-full">
-            <h2 className="text-xl font-bold">{post.title}</h2>
             <p
+              className="dark:text-gray-200 text-gray-800"
               style={{
                 overflow: "hidden",
                 textOverflow: "ellipsis",
@@ -45,6 +117,36 @@ const Post = ({ post, short }: { post: PostDTO; short: boolean }) => {
             >
               {post.content}
             </p>
+          </div>
+          <div className="w-full flex gap-1 mt-2">
+            <Button
+              size={"sm"}
+              variant={"ghost"}
+              className="gap-2 items-center"
+              onClick={(e) => {
+                e.stopPropagation();
+                router.navigate({
+                  to: `/post/${post.id}`,
+                });
+              }}
+            >
+              {/* @ts-ignore */}
+              <ion-icon class="text-xl" name="chatbubble-outline"></ion-icon>
+              <span>{post.responseCount}</span>
+            </Button>
+            <Button
+              size={"sm"}
+              variant={"ghost"}
+              className="gap-2 items-center"
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleLike();
+              }}
+            >
+              {/* @ts-ignore */}
+              <ion-icon class="text-xl" name={post.likedByMe ? "heart" : "heart-outline"}></ion-icon>
+              <span>{post.likeCount}</span>
+            </Button>
           </div>
         </div>
       </div>

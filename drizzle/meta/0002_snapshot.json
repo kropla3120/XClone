@@ -1,6 +1,6 @@
 {
-  "id": "f0ea7993-0ea0-4696-a4c5-41d4581f74c2",
-  "prevId": "00000000-0000-0000-0000-000000000000",
+  "id": "b57e64b2-6870-4ced-bfa0-43ed48710371",
+  "prevId": "3d822831-a47f-4ae2-9a65-18b48ce6eb29",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -34,9 +34,10 @@
         },
         "created": {
           "name": "created",
-          "type": "text",
+          "type": "timestamp with time zone",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "default": "now()"
         }
       },
       "indexes": {},
@@ -64,7 +65,7 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
+          "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },
@@ -72,69 +73,6 @@
       "uniqueConstraints": {
         "comments_id_unique": {
           "name": "comments_id_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "id"
-          ]
-        }
-      }
-    },
-    "public.followers": {
-      "name": "followers",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "serial",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "followerId": {
-          "name": "followerId",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "followingId": {
-          "name": "followingId",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "followers_followerId_users_id_fk": {
-          "name": "followers_followerId_users_id_fk",
-          "tableFrom": "followers",
-          "tableTo": "users",
-          "columnsFrom": [
-            "followerId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "followers_followingId_users_id_fk": {
-          "name": "followers_followingId_users_id_fk",
-          "tableFrom": "followers",
-          "tableTo": "users",
-          "columnsFrom": [
-            "followingId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "followers_id_unique": {
-          "name": "followers_id_unique",
           "nullsNotDistinct": false,
           "columns": [
             "id"
@@ -172,9 +110,10 @@
         },
         "created": {
           "name": "created",
-          "type": "text",
+          "type": "timestamp with time zone",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "default": "now()"
         }
       },
       "indexes": {},

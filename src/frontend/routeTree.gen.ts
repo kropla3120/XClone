@@ -13,8 +13,9 @@
 import { Route as rootRoute } from './routes/__root'
 import { Route as RegisterImport } from './routes/register'
 import { Route as LoginImport } from './routes/login'
-import { Route as IndexImport } from './routes/index'
-import { Route as PostIdImport } from './routes/post/$id'
+import { Route as LayoutImport } from './routes/_layout'
+import { Route as LayoutIndexImport } from './routes/_layout/index'
+import { Route as LayoutPostIdImport } from './routes/_layout/post/$id'
 
 // Create/Update Routes
 
@@ -28,22 +29,27 @@ const LoginRoute = LoginImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
-const IndexRoute = IndexImport.update({
-  path: '/',
+const LayoutRoute = LayoutImport.update({
+  id: '/_layout',
   getParentRoute: () => rootRoute,
 } as any)
 
-const PostIdRoute = PostIdImport.update({
+const LayoutIndexRoute = LayoutIndexImport.update({
+  path: '/',
+  getParentRoute: () => LayoutRoute,
+} as any)
+
+const LayoutPostIdRoute = LayoutPostIdImport.update({
   path: '/post/$id',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => LayoutRoute,
 } as any)
 
 // Populate the FileRoutesByPath interface
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      preLoaderRoute: typeof IndexImport
+    '/_layout': {
+      preLoaderRoute: typeof LayoutImport
       parentRoute: typeof rootRoute
     }
     '/login': {
@@ -54,9 +60,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RegisterImport
       parentRoute: typeof rootRoute
     }
-    '/post/$id': {
-      preLoaderRoute: typeof PostIdImport
-      parentRoute: typeof rootRoute
+    '/_layout/': {
+      preLoaderRoute: typeof LayoutIndexImport
+      parentRoute: typeof LayoutImport
+    }
+    '/_layout/post/$id': {
+      preLoaderRoute: typeof LayoutPostIdImport
+      parentRoute: typeof LayoutImport
     }
   }
 }
@@ -64,10 +74,9 @@ declare module '@tanstack/react-router' {
 // Create and export the route tree
 
 export const routeTree = rootRoute.addChildren([
-  IndexRoute,
+  LayoutRoute.addChildren([LayoutIndexRoute, LayoutPostIdRoute]),
   LoginRoute,
   RegisterRoute,
-  PostIdRoute,
 ])
 
 /* prettier-ignore-end */

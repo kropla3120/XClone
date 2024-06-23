@@ -2,161 +2,104 @@ import express from "express";
 import path from "path";
 import { fileURLToPath } from "url";
 import { dirname } from "path";
-import { drizzle } from "drizzle-orm/better-sqlite3";
-import Database from "better-sqlite3";
-import * as schema from "./db/schema";
+import { drizzle } from "drizzle-orm/postgres-js";
+import * as schema from "./db/schema.js";
 import session from "express-session";
-import { LoginRequestDTO } from "./types";
-import { and, eq } from "drizzle-orm";
 import cors from "cors";
-import { comments, posts, users } from "./db/schema";
+import fs from "fs";
+import AuthController from "./controllers/authController.js";
+import PostsController from "./controllers/postsController.js";
+import postgres from "postgres";
+import { Strategy } from "passport-jwt";
+import passport from "passport";
+import cookieParser from "cookie-parser";
+import { eq, Logger } from "drizzle-orm";
+import "dotenv/config";
+import loggingMiddleware from "./middleware/loggingMiddleware.js";
+import errorHandlingMiddleware from "./middleware/errorHandlingMiddleware.js";
+import FollowersController from "./controllers/followersController.js";
 
 // const SESSION_TIMEOUT = 60000;
 
-const sqlite = new Database("db.sqlite");
-const db = drizzle(sqlite, { schema });
+if (!process.env.SECRET) {
+  console.error("SECRET not set");
+  process.exit(1);
+}
 
-// const __filename = fileURLToPath(import.meta.url);
-// const __dirname = dirname(__filename);
+class MyLogger implements Logger {
+  logQuery(query: string, params: unknown[]): void {
+    console.log({ query, params });
+  }
+}
+
+const queryClient = postgres("postgres://postgres:12345678@localhost:5432/projekt");
+const db = drizzle(queryClient, { schema, logger: new MyLogger() });
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+const jwtstrategy = new Strategy(
+  {
+    jwtFromRequest: (req) => req.cookies?.jwt,
+    secretOrKey: process.env.SECRET,
+  },
+  (payload, done) => {
+    if (!payload) return done(null, false);
+    return done(null, payload);
+  }
+);
 
 const app = express();
 
+passport.use("JWT", jwtstrategy);
+passport.serializeUser(function (user, done) {
+  done(null, user);
+});
+
+passport.deserializeUser(function (user, done) {
+  done(null, user as any);
+});
+
+app.use(errorHandlingMiddleware);
 app.use(cors());
 app.use(express.json());
+app.use(cookieParser(process.env.SECRET) as any);
 app.use(
   session({
-    secret: "sekret",
-    resave: false,
+    secret: process.env.SECRET,
+    resave: true,
     saveUninitialized: true,
-    cookie: { secure: false },
   })
 );
+app.use(passport.initialize());
+app.use(passport.session());
+
+app.use(loggingMiddleware);
 
 // const distPath = path.join(__dirname, "public");
 
 // app.use("/", express.static(distPath));
 
-// app.get("/", (req, res) => {
-//   res.sendFile(path.join(distPath, "index.html"));
-// });
-
-app.get("/api/users", async (req, res) => {
-  const u = await db.select().from(users);
-  res.json(u);
-});
-
-app.post("/api/login", async (req, res) => {
-  const { username, password } = req.body as LoginRequestDTO;
-  // const u = await db.select().from(users).where(eq(users.email, email));
-  const u = await db.query.users.findFirst({ where: and(eq(users.username, username), eq(users.password, password)) });
-  if (!u) {
-    res.status(401).json({ error: "Invalid credentials" });
-    return;
-  }
-  req.session.user = { id: u.id, username: u.username, firstName: u.firstName, lastName: u.lastName };
-  // res.cookie("loggedIn", "true", { maxAge: SESSION_TIMEOUT });
-  res.status(200).json({ message: "Logged in" });
-});
-
-app.get("/api/logout", (req, res) => {
-  req.session.destroy(() => {
-    res.status(200).json({ message: "Logged out" });
+if (process.env.NODE_ENV === "production") {
+  app.use(function (req, res, next) {
+    const p = path.join(__dirname, "public", req.url);
+    console.log(p);
+    const isFile = fs.existsSync(p) && fs.lstatSync(p).isFile();
+    console.log(isFile);
+    if (!req.url.startsWith("/api")) {
+      if (!isFile) {
+        req.url = "/";
+      }
+      express.static("public")(req, res, next);
+      return;
+    }
+    next();
   });
-});
+}
 
-app.post("/api/register", async (req, res) => {
-  const { username, password, firstName, lastName } = req.body;
-  const u = await db.query.users.findFirst({ where: eq(users.username, username) });
-  if (u) {
-    res.status(400).json({ error: "Username already in use" });
-    return;
-  }
-
-  await db.insert(users).values({ username, password, firstName, lastName }).execute();
-
-  res.status(201).json({ message: "User created" });
-});
-
-app.get("/api/posts", async (req, res) => {
-  if (!req.session.user) {
-    res.status(401).json({ error: "Not logged in" });
-    return;
-  }
-  const data = await db.query.posts.findMany({
-    with: {
-      user: true,
-    },
-  });
-  res.json(data);
-});
-
-app.get("/api/posts/:id", async (req, res) => {
-  if (!req.session.user) {
-    res.status(401).json({ error: "Not logged in" });
-    return;
-  }
-  const { id } = req.params;
-  const data = await db.query.posts.findFirst({
-    where: eq(posts.id, parseInt(id)),
-    with: {
-      user: true,
-    },
-  });
-  res.json(data);
-});
-
-app.put("/api/posts/:id", async (req, res) => {
-  if (!req.session.user) {
-    res.status(401).json({ error: "Not logged in" });
-    return;
-  }
-  const { id } = req.params;
-  const { title, content } = req.body;
-  db.update(posts)
-    .set({ title, content })
-    .where(eq(posts.id, parseInt(id)))
-    .execute();
-  res.json({ message: "Post updated" });
-});
-
-app.get("/api/posts/:id/comments", async (req, res) => {
-  if (!req.session.user) {
-    res.status(401).json({ error: "Not logged in" });
-    return;
-  }
-  const { id } = req.params;
-  const data = await db.query.comments.findMany({
-    where: eq(comments.postId, parseInt(id)),
-    with: {
-      user: true,
-    },
-  });
-  res.json(data);
-});
-
-app.post("/api/posts/:id/comments", async (req, res) => {
-  if (!req.session.user) {
-    res.status(401).json({ error: "Not logged in" });
-    return;
-  }
-  const { id } = req.params;
-  const { content } = req.body;
-  db.insert(comments)
-    .values({ content, userId: req.session.user.id, postId: parseInt(id), created: new Date().toISOString() })
-    .execute();
-  res.status(201).json({ message: "Comment created" });
-});
-
-app.post("/api/posts", (req, res) => {
-  if (!req.session.user) {
-    res.status(401).json({ error: "Not logged in" });
-    return;
-  }
-  const { title, content } = req.body;
-  const { id } = req.session.user;
-  db.insert(posts).values({ title, content, userId: id, created: new Date().toISOString() }).execute();
-  res.status(201).json({ message: "Post created" });
-});
+app.use("/api", AuthController(db));
+app.use("/api/posts", PostsController(db));
+app.use("/api/followers", FollowersController(db));
 
 app.listen(3000, () => {
   console.log("Server is running on http://localhost:3000");

@@ -1,12 +1,54 @@
 {
-  "version": "5",
-  "dialect": "sqlite",
+  "version": "7",
+  "dialect": "postgresql",
   "entries": [
     {
       "idx": 0,
-      "version": "5",
-      "when": 1715112268841,
-      "tag": "0000_breezy_zodiak",
+      "version": "7",
+      "when": 1718034239470,
+      "tag": "0000_married_guardian",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1718207043088,
+      "tag": "0001_chunky_ironclad",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1718208990506,
+      "tag": "0002_aromatic_vapor",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1718209578280,
+      "tag": "0003_loud_unus",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1718827950369,
+      "tag": "0004_narrow_ken_ellis",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1718828082546,
+      "tag": "0005_flat_mother_askani",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1718828873722,
+      "tag": "0006_slim_stryfe",
       "breakpoints": true
     }
   ]

@@ -1,6 +1,6 @@
 {
-  "id": "f0ea7993-0ea0-4696-a4c5-41d4581f74c2",
-  "prevId": "00000000-0000-0000-0000-000000000000",
+  "id": "9eab26aa-41e8-4efc-8d07-a76a22339e7b",
+  "prevId": "b57e64b2-6870-4ced-bfa0-43ed48710371",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -34,9 +34,10 @@
         },
         "created": {
           "name": "created",
-          "type": "text",
+          "type": "timestamp with time zone",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "default": "now()"
         }
       },
       "indexes": {},
@@ -64,7 +65,7 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
+          "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },
@@ -172,9 +173,10 @@
         },
         "created": {
           "name": "created",
-          "type": "text",
+          "type": "timestamp with time zone",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "default": "now()"
         }
       },
       "indexes": {},

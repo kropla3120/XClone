@@ -1,10 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { UserContext } from "@/context";
 import { createFileRoute, createLazyFileRoute, redirect, useRouter } from "@tanstack/react-router";
 import { useContext } from "react";
 
 const Login = () => {
-  // const { setLoggedIn } = useContext(AppContext);
   const router = useRouter();
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -20,7 +20,8 @@ const Login = () => {
     });
 
     if (res.ok) {
-      window.sessionStorage.setItem("loggedIn", "true");
+      // const d = await res.json();
+      window.localStorage.setItem("loggedIn", "true");
       router.navigate({
         to: "/",
       });

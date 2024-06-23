@@ -1,14 +1,17 @@
 {
     "compilerOptions": {
-      "composite": true,
+      "composite": false,
       "skipLibCheck": true,
-      "module": "ESNext",
-      "moduleResolution": "Node",
+      "module": "NodeNext",
+      "target": "ES6",
+      "moduleResolution": "NodeNext",
       "allowSyntheticDefaultImports": true,
       "strict": true,
       "esModuleInterop": true,
       "outDir": "dist",
       "rootDir": "src/api",
+      "declaration": false,
+      
       
     },
     "include": ["src/api/**/*.ts", "src/api/db/migrate.ts"]

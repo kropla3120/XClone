@@ -1,6 +1,5 @@
 export type PostDTO = {
   id: number;
-  title: string;
   content: string;
   user: {
     id: number;
@@ -9,16 +8,10 @@ export type PostDTO = {
     lastName: string | null;
   };
   created: string;
-};
-export type CommentDTO = {
-  id: number;
-  content: string;
-  user: {
-    id: number;
-    username: string;
-    firstName: string | null;
-    lastName: string | null;
-  };
-  postId: number;
-  created: string;
+  myPost: boolean;
+  creatorFollowed: boolean;
+  responseToPostId: number | null;
+  likeCount: number;
+  responseCount: number;
+  likedByMe: boolean;
 };

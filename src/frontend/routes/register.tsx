@@ -1,9 +1,14 @@
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { createFileRoute, useRouter } from "@tanstack/react-router";
+import { AlertCircle } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
 
 const Register = () => {
   // const { setLoggedIn } = useContext(AppContext);
+  const [errors, setErrors] = useState<string[] | null>(null);
   const router = useRouter();
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -21,12 +26,16 @@ const Register = () => {
     });
 
     if (res.ok) {
-      alert("Zarejestrowano !");
+      // alert("Zarejestrowano !");
+      toast.success("Zarejestrowano !");
+      setErrors(null);
+      window.localStorage.setItem("loggedIn", "true");
       router.navigate({
-        to: "/login",
+        to: "/",
       });
     } else {
-      alert("Something went wrong!");
+      const data = await res.json();
+      setErrors(data.error.split("\n"));
     }
   };
   return (
@@ -42,6 +51,13 @@ const Register = () => {
           <Button variant="default" size="default" className="w-full" type="submit">
             Zarejestruj się
           </Button>
+          {errors && (
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle style={{ textAlign: "left" }}>Błąd</AlertTitle>
+              <AlertDescription style={{ textAlign: "left" }}>{errors?.map((x) => <p>{x}</p>)}</AlertDescription>
+            </Alert>
+          )}
         </div>
       </form>
     </div>
