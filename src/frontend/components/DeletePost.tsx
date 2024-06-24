@@ -8,13 +8,15 @@ import { UserContext } from "@/context";
 import { Textarea } from "./ui/textarea";
 import { useRouter } from "@tanstack/react-router";
 import { toast } from "sonner";
+import { fetchApi } from "@/lib/utils";
 
 const DeletePost = ({ post, isInPostDetails }: { post: PostDTO; isInPostDetails?: boolean }) => {
   const router = useRouter();
   const [isOpen, setIsOpen] = React.useState(false);
   const queryClient = useQueryClient();
+
   const handleDelete = async () => {
-    await fetch(`/api/posts/${post.id}`, {
+    await fetchApi(`/api/posts/${post.id}`, router, {
       method: "DELETE",
     });
     setIsOpen(false);

@@ -1,3 +1,4 @@
+import { Router } from "@tanstack/react-router";
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 
@@ -27,4 +28,21 @@ export const generateAvatar = (name: string) => {
   ctx.textBaseline = "middle";
   ctx.fillText(initials, 50, 50);
   return canvas.toDataURL();
+};
+
+export const fetchApi = async (url: string, router: Router<any, any>, options?: RequestInit) => {
+  const res = await fetch(url, options);
+  if (res.status === 401) {
+    const refresh = await fetch("/api/refresh-token");
+    if (refresh.status === 401) {
+      window.localStorage.setItem("loggedIn", "false");
+      router.navigate({
+        to: "/login",
+      });
+      return;
+    } else {
+      return fetch(url, options);
+    }
+  }
+  return res;
 };

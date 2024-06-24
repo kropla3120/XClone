@@ -4,14 +4,17 @@ import { Button } from "./ui/button";
 import { Textarea } from "./ui/textarea";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { fetchApi } from "@/lib/utils";
+import { useRouter } from "@tanstack/react-router";
 
 const AddPost = () => {
   const queryClient = useQueryClient();
+  const router = useRouter();
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     const content = formData.get("content") as string;
-    const res = await fetch("/api/posts", {
+    const res = await fetchApi("/api/posts", router, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -19,7 +22,7 @@ const AddPost = () => {
       body: JSON.stringify({ content }),
     });
 
-    if (res.status === 400) {
+    if (res?.status === 400) {
       const { error } = await res.json();
       toast.error(
         <div>

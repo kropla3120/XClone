@@ -1,8 +1,8 @@
 import { createContext } from "react";
-import { UserSession } from "../api/types";
+import { UserDTO, UserSession } from "../api/types";
 
 type UserContextType = {
-  user: UserSession | null;
+  user: UserDTO | null;
 };
 
 export const UserContext = createContext<UserContextType>({ user: null });

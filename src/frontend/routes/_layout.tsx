@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { UserContext } from "@/context";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Outlet, useRouter } from "@tanstack/react-router";
+import { UserDTO } from "src/api/types";
 
 export const Route = createFileRoute("/_layout")({
   component: () => {

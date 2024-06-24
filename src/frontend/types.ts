@@ -9,7 +9,6 @@ export type PostDTO = {
   };
   created: string;
   myPost: boolean;
-  creatorFollowed: boolean;
   responseToPostId: number | null;
   likeCount: number;
   responseCount: number;

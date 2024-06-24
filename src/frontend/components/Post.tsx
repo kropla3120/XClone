@@ -1,4 +1,4 @@
-import { generateAvatar } from "@/lib/utils";
+import { fetchApi, generateAvatar } from "@/lib/utils";
 import { PostDTO } from "@/types";
 import { useRouter } from "@tanstack/react-router";
 import React, { useContext } from "react";
@@ -15,11 +15,11 @@ const Post = ({ post, short }: { post: PostDTO; short: boolean }) => {
   const router = useRouter();
 
   const handleFollow = async () => {
-    const res = await fetch(`/api/followers/follow/${post.user.id}`, {
+    const res = await fetchApi(`/api/followers/follow/${post.user.id}`, router, {
       method: "PUT",
     });
 
-    const data = await res.json();
+    const data = await res?.json();
 
     if (data.error) {
       toast.error(data.error);
@@ -27,15 +27,15 @@ const Post = ({ post, short }: { post: PostDTO; short: boolean }) => {
     if (data.message) {
       toast.success(data.message);
     }
-    queryClient.invalidateQueries({ queryKey: ["posts"] });
+    queryClient.invalidateQueries({ queryKey: ["user"] });
   };
 
   const handleUnfollow = async () => {
-    const res = await fetch(`/api/followers/unfollow/${post.user.id}`, {
+    const res = await fetchApi(`/api/followers/unfollow/${post.user.id}`, router, {
       method: "DELETE",
     });
 
-    const data = await res.json();
+    const data = await res?.json();
 
     if (data.error) {
       toast.error(data.error);
@@ -43,23 +43,28 @@ const Post = ({ post, short }: { post: PostDTO; short: boolean }) => {
     if (data.message) {
       toast.success(data.message);
     }
-
-    queryClient.invalidateQueries({ queryKey: ["posts"] });
+    queryClient.invalidateQueries({ queryKey: ["user"] });
   };
 
   const toggleLike = async () => {
-    const res = await fetch(`/api/posts/${post.id}/like`, {
+    const res = await fetchApi(`/api/posts/${post.id}/like`, router, {
       method: post.likedByMe ? "DELETE" : "PUT",
     });
 
-    const data = await res.json();
+    const data = await res?.json();
 
     if (data.error) {
       toast.error(data.error);
     }
-
-    queryClient.invalidateQueries({ queryKey: ["posts", "post", post.id] });
+    if (post.responseToPostId !== null) {
+      queryClient.invalidateQueries({ queryKey: ["responses", post.responseToPostId.toString()] });
+    } else {
+      queryClient.invalidateQueries({ queryKey: ["posts"] });
+      queryClient.invalidateQueries({ queryKey: ["post", post.id] });
+    }
   };
+
+  const isFollowed = user?.following.map((x) => x.id).includes(post.user.id);
 
   return (
     <div className="relative">
@@ -71,7 +76,7 @@ const Post = ({ post, short }: { post: PostDTO; short: boolean }) => {
           </>
         ) : (
           <div className="p-2">
-            {post.creatorFollowed ? (
+            {isFollowed ? (
               <Button size={"sm"} variant={"outline"} onClick={handleUnfollow}>
                 Obserwujesz
               </Button>

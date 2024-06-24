@@ -18,11 +18,20 @@ import "dotenv/config";
 import loggingMiddleware from "./middleware/loggingMiddleware.js";
 import errorHandlingMiddleware from "./middleware/errorHandlingMiddleware.js";
 import FollowersController from "./controllers/followersController.js";
+import helmet from "helmet";
 
 // const SESSION_TIMEOUT = 60000;
 
 if (!process.env.SECRET) {
   console.error("SECRET not set");
+  process.exit(1);
+}
+if (!process.env.DB_CONNECTION_STRING) {
+  console.error("DB_CONNECTION_STRING not set");
+  process.exit(1);
+}
+if (!process.env.SESSION_LENGTH) {
+  console.error("SESSION_LENGTH not set");
   process.exit(1);
 }
 
@@ -32,7 +41,7 @@ class MyLogger implements Logger {
   }
 }
 
-const queryClient = postgres("postgres://postgres:12345678@localhost:5432/projekt");
+const queryClient = postgres(process.env.DB_CONNECTION_STRING);
 const db = drizzle(queryClient, { schema, logger: new MyLogger() });
 
 const __filename = fileURLToPath(import.meta.url);
@@ -40,7 +49,7 @@ const __dirname = dirname(__filename);
 
 const jwtstrategy = new Strategy(
   {
-    jwtFromRequest: (req) => req.cookies?.jwt,
+    jwtFromRequest: (req) => req.cookies?.token,
     secretOrKey: process.env.SECRET,
   },
   (payload, done) => {
@@ -60,8 +69,8 @@ passport.deserializeUser(function (user, done) {
   done(null, user as any);
 });
 
-app.use(errorHandlingMiddleware);
 app.use(cors());
+app.use(helmet());
 app.use(express.json());
 app.use(cookieParser(process.env.SECRET) as any);
 app.use(
@@ -101,6 +110,10 @@ app.use("/api", AuthController(db));
 app.use("/api/posts", PostsController(db));
 app.use("/api/followers", FollowersController(db));
 
+app.use(errorHandlingMiddleware);
+
 app.listen(3000, () => {
   console.log("Server is running on http://localhost:3000");
 });
+
+export default app;

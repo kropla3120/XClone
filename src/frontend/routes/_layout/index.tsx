@@ -151,7 +151,7 @@ const Index = () => {
 export const Route = createFileRoute("/_layout/")({
   component: Index,
   beforeLoad: () => {
-    if (!document.cookie.includes("jwt")) {
+    if (!document.cookie.includes("token")) {
       throw redirect({
         to: "/login",
         replace: true,

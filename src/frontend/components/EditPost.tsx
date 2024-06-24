@@ -5,13 +5,16 @@ import { Input } from "./ui/input";
 import { PostDTO } from "@/types";
 import { useQueryClient } from "@tanstack/react-query";
 import { Textarea } from "./ui/textarea";
+import { fetchApi } from "@/lib/utils";
+import { useRouter } from "@tanstack/react-router";
 
 const EditPost = ({ post }: { post: PostDTO }) => {
   const [content, setContent] = React.useState(post.content);
   const [isOpen, setIsOpen] = React.useState(false);
   const queryClient = useQueryClient();
+  const router = useRouter();
   const handleEdit = async () => {
-    await fetch(`/api/posts/${post.id}`, {
+    await fetchApi(`/api/posts/${post.id}`, router, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",

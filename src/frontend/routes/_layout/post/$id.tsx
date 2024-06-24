@@ -1,6 +1,7 @@
 import Post from "@/components/Post";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { fetchApi } from "@/lib/utils";
 import { PostDTO } from "@/types";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, redirect, useRouter } from "@tanstack/react-router";
@@ -18,35 +19,21 @@ function PostDetails() {
   const { data } = useQuery({
     queryKey: ["post", id],
     queryFn: async () => {
-      const response = await fetch(`/api/posts/${id}`);
-      if (response.status === 401) {
-        window.localStorage.setItem("loggedIn", "false");
-        router.navigate({
-          to: "/login",
-          replace: true,
-        });
-      }
-      return (await response.json()) as PostDTO;
+      const response = await fetchApi(`/api/posts/${id}`, router);
+      return (await response?.json()) as PostDTO;
     },
   });
 
   const { data: responses, refetch: refetchResponses } = useQuery({
     queryKey: ["responses", id],
     queryFn: async () => {
-      const response = await fetch(`/api/posts/${id}/responses`);
-      if (response.status === 401) {
-        window.localStorage.setItem("loggedIn", "false");
-        router.navigate({
-          to: "/login",
-          replace: true,
-        });
-      }
-      return (await response.json()) as PostDTO[];
+      const response = await fetchApi(`/api/posts/${id}/responses`, router);
+      return (await response?.json()) as PostDTO[];
     },
   });
 
   const handleComment = async (content: string) => {
-    await fetch(`/api/posts`, {
+    await fetchApi(`/api/posts`, router, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
