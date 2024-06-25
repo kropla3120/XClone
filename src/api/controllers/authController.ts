@@ -1,8 +1,8 @@
 import { Router } from "express";
-import { LoginRequestDTO, UserSession } from "../types";
+import { type LoginRequestDTO, UserSession } from "../types";
 import { and, count, eq, sql } from "drizzle-orm";
-import { users, followers } from "../db/schema";
-import * as schema from "../db/schema";
+import { users, followers } from "../db/schema.js";
+import * as schema from "../db/schema.js";
 import { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import passport from "passport";
 import jwt from "jsonwebtoken";

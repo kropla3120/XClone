@@ -1,9 +1,9 @@
 import { Router } from "express";
 import { and, arrayContains, asc, desc, eq, inArray, sql, or } from "drizzle-orm";
-import * as schema from "../db/schema";
+import * as schema from "../db/schema.js";
 import { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import passport from "passport";
-import { followers } from "../db/schema";
+import { followers } from "../db/schema.js";
 import { makePgArray } from "drizzle-orm/pg-core";
 
 const { users } = schema;

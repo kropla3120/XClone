@@ -1,28 +1,29 @@
 import { beforeAll, describe, expect, inject, it, test, vi } from "vitest";
 import request from "supertest";
-import { users } from "../../src/api/db/schema";
 import TestAgent from "supertest/lib/agent";
-import { PostgresJsDatabase } from "drizzle-orm/postgres-js";
-import bcrypt from "bcrypt";
-import { createMockDb } from "../utils";
-import { app, db } from "./setup";
+import { createMockDb, createTestUser } from "../utils";
+import { UserSession } from "../../src/api/types";
 
+let app: any;
 let agent: TestAgent;
-const username = "test";
-const password = "test12345678";
-const firstName = "test";
-const lastName = "test";
-
-const createTestUser = async (db: PostgresJsDatabase) => {
-  const encryptedPassword = await bcrypt.hash(password, 10);
-  await db.insert(users).values({ username, password: encryptedPassword, firstName: "test", lastName: "test" }).execute();
-};
+let user: UserSession & { password: string };
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 beforeAll(async () => {
+  const { db, postgresContainer, queryClient } = await createMockDb();
+
+  user = await createTestUser(db);
+  process.env.PORT = "3001";
+  process.env.DB_CONNECTION_STRING = postgresContainer.getConnectionUri();
+  app = (await import("../../src/api/index")).default;
   agent = request.agent(app);
-  await createTestUser(db);
+
+  return async () => {
+    await postgresContainer.stop();
+    await queryClient.end();
+  };
+
   // console.log(app.address);
 }, 100000);
 
@@ -34,7 +35,7 @@ describe("Auth", async () => {
   it("should login correctly", async (done) => {
     await agent
       .post("/api/login")
-      .send({ username, password })
+      .send({ username: user.username, password: user.password })
       .expect(200)
       .expect("set-cookie", /token=/);
   });
@@ -44,11 +45,11 @@ describe("Auth", async () => {
       .get("/api/user")
       .expect(200)
       .then((res) => {
-        expect(res.body.username).toBe(username);
+        expect(res.body.username).toBe(user.username);
         expect(res.body.password).toBeUndefined();
         expect(res.body.id).toBeDefined();
-        expect(res.body.firstName).toBe(firstName);
-        expect(res.body.lastName).toBe(lastName);
+        expect(res.body.firstName).toBe(user.firstName);
+        expect(res.body.lastName).toBe(user.lastName);
         expect(res.body.followers).toEqual([]);
         expect(res.body.following).toEqual([]);
       });
@@ -58,7 +59,7 @@ describe("Auth", async () => {
     process.env.SESSION_LENGTH = "1000";
     const newApp = (await import("../../src/api/index")).default;
     const refreshTokenAgent = request.agent(newApp);
-    await refreshTokenAgent.post("/api/login").send({ username, password }).expect(200);
+    await refreshTokenAgent.post("/api/login").send({ username: user.username, password: user.password }).expect(200);
     await sleep(1000);
     await refreshTokenAgent.get("/api/user").expect(401);
     await refreshTokenAgent

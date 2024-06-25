@@ -2,15 +2,16 @@
     "compilerOptions": {
       "composite": false,
       "skipLibCheck": true,
-      "module": "NodeNext",
+      "module": "Node16",
       "target": "ES6",
-      "moduleResolution": "NodeNext",
+      "moduleResolution": "Node16",
       "allowSyntheticDefaultImports": true,
       "strict": true,
       "esModuleInterop": true,
       "outDir": "dist",
       "rootDir": "src/api",
       "declaration": false,
+      "noImplicitAny": false,
       
       
     },

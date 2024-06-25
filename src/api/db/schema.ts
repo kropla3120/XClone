@@ -16,7 +16,7 @@ export const posts = pgTable("posts", {
     .notNull()
     .references(() => users.id),
   created: timestamp("created", { mode: "string", withTimezone: true }).notNull().defaultNow(),
-  responseToPostId: integer("responseToPostId").references(() => posts.id),
+  responseToPostId: integer("responseToPostId").references(() => posts.id, { onDelete: "cascade" }),
   likeCount: integer("likeCount").notNull().default(0),
   responseCount: integer("responseCount").notNull().default(0),
 });

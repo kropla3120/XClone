@@ -1,13 +1,13 @@
 import { Router } from "express";
 import { and, arrayContains, asc, desc, eq, inArray, sql, or, isNull, isNotNull } from "drizzle-orm";
-import * as schema from "../db/schema";
+import * as schema from "../db/schema.js";
 import { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import passport from "passport";
-import { followers } from "../db/schema";
+import { followers } from "../db/schema.js";
 import { makePgArray } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
-import { PostDTO } from "../types";
+import { type PostDTO } from "../types";
 
 const { users, posts, likes } = schema;
 
@@ -143,7 +143,8 @@ const PostsController = (db: PostgresJsDatabase<typeof schema>) => {
         return;
       }
 
-      db.delete(posts)
+      await db
+        .delete(posts)
         .where(eq(posts.id, parseInt(id)))
         .execute();
       res.json({ message: "Post usunięty" });

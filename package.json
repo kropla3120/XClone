@@ -12,7 +12,8 @@
     "migrate": "drizzle-kit generate && tsx src/api/db/migrate.ts",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
-    "test": "vitest"
+    "test:unit": "vitest",
+    "test:integration": "playwright test"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.0.5",

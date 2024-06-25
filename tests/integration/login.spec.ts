@@ -1,8 +1,7 @@
 import { test, expect } from "@playwright/test";
-import { createMockDb, createTestUser } from "../utils";
-import { UserDTO, UserSession } from "../../src/api/types";
 
 test("login should work", async ({ page }) => {
+  // console.log(process.env.DB_CONNECTION_STRING);
   await page.goto("http://localhost:5173/login");
   await page.getByPlaceholder("Login").click();
   await page.getByPlaceholder("Login").fill("test");

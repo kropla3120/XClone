@@ -40,7 +40,7 @@ class MyLogger implements Logger {
     console.log({ query, params });
   }
 }
-
+console.log(process.env.DB_CONNECTION_STRING);
 const queryClient = postgres(process.env.DB_CONNECTION_STRING);
 const db = drizzle(queryClient, { schema, logger: new MyLogger() });
 
@@ -69,8 +69,6 @@ passport.deserializeUser(function (user, done) {
   done(null, user as any);
 });
 
-app.use(cors());
-app.use(helmet());
 app.use(express.json());
 app.use(cookieParser(process.env.SECRET) as any);
 app.use(
@@ -105,6 +103,8 @@ if (process.env.NODE_ENV === "production") {
     next();
   });
 }
+app.use(cors());
+app.use(helmet());
 
 app.use("/api", AuthController(db));
 app.use("/api/posts", PostsController(db));
@@ -112,8 +112,10 @@ app.use("/api/followers", FollowersController(db));
 
 app.use(errorHandlingMiddleware);
 
-app.listen(3000, () => {
-  console.log("Server is running on http://localhost:3000");
+const port = process.env.PORT || 3000;
+
+app.listen(port, () => {
+  console.log(`Server is running on http://localhost:${port}}`);
 });
 
 export default app;

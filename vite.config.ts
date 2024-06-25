@@ -21,6 +21,6 @@ export default defineConfig({
   },
   test: {
     root: "tests/unit",
-    globalSetup: "setup.ts",
+    environment: "node",
   },
 });
